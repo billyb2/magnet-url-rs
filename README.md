@@ -1,3 +1,4 @@
+[![Build Status](https://www.travis-ci.com/billyb2/parse-magnet-rs.svg?branch=main)](https://www.travis-ci.com/billyb2/parse-magnet-rs)
 # The Rust Magnet URL Parser!
 # Intro
 magnet_url-rs has the goal of, as you may have guessed, parsing the parts of magnets. It does
