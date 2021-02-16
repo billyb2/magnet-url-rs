@@ -8,11 +8,11 @@ const DISPLAY_NAME_RE_STR: &str = r"dn=([A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\{}\-]*)(
 const EXACT_TOPIC_RE_STR: &str = r"xt=urn:(sha1|btih|ed2k|aich|kzhash|md5|tree:tiger):([A-Fa-f0-9]+|[A-Za-z2-7]+)";
 const ADDRESS_TRACKER_RE_STR: &str = r"tr=([A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\{}\-]*)(&|$|\s)";
 const KEYWORD_TOPIC_RE_STR: &str = r"kt=([A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\{}\-]*)(&|$|\s)";
-const EXACT_SOURCE_RE_STR: &str = r"xs=((\w+)://[A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\\-]*)(&|$|\s)";
+const EXACT_SOURCE_RE_STR: &str = r"xs=((\w+)[A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\\-]*)(&|$|\s)";
 const EXACT_LENGTH_RE_STR: &str = r"xl=(\d*)(&|$|\s)";
 const WEB_SEED_RE_STR: &str = r"ws=([A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\{}\-]*)(&|$|\s)";
-const ACCEPTABLE_SOURCE_RE_STR: &str = r"as=((\w+)://[A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\\-]*)(&|$|\s)";
-const MANIFEST_TOPIC_RE_STR: &str = r"mt=((\w+)://[A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\\-]*|urn:(sha1|btih|ed2k|aich|kzhash|md5|tree:tiger):([A-Fa-f0-9]+|[A-Za-z2-7]+))(&|$|\s)";
+const ACCEPTABLE_SOURCE_RE_STR: &str = r"as=((\w+)[A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\\-]*)(&|$|\s)";
+const MANIFEST_TOPIC_RE_STR: &str = r"mt=((\w+)[A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\\-]*|urn:(sha1|btih|ed2k|aich|kzhash|md5|tree:tiger):([A-Fa-f0-9]+|[A-Za-z2-7]+))(&|$|\s)";
 
 
 ///# Intro
@@ -158,5 +158,34 @@ impl Magnet {
             mt: validate_regex(&MANIFEST_TOPIC_RE, 1),
 
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::Magnet;
+
+    #[test]
+    fn sintel_test() {
+        let magnet_link = Magnet::new("magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=Sintel&tr=udp%3A%2F%2Fexplodie.org%3A6969&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Ftracker.empire-js.us%3A1337&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337&tr=wss%3A%2F%2Ftracker.btorrent.xyz&tr=wss%3A%2F%2Ftracker.fastcast.nz&tr=wss%3A%2F%2Ftracker.openwebtorrent.com&ws=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2F&xs=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2Fsintel.torrent");
+        
+        assert_eq!(magnet_link.dn, "Sintel".to_string());
+        assert_eq!(magnet_link.hash_type, "btih".to_string());
+        assert_eq!(magnet_link.xt, "08ada5a7a6183aae1e09d831df6748d566095a10".to_string());
+        assert_eq!(magnet_link.xl, -1);
+        assert_eq!(magnet_link.xs, "https%3A%2F%2Fwebtorrent.io%2Ftorrents%2Fsintel.torrent".to_string());
+        assert_eq!(magnet_link.tr[0], "udp%3A%2F%2Fexplodie.org%3A6969".to_string());
+        assert_eq!(magnet_link.tr[1], "udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969".to_string());
+        assert_eq!(magnet_link.tr[2], "udp%3A%2F%2Ftracker.empire-js.us%3A1337".to_string());
+        assert_eq!(magnet_link.tr[3], "udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969".to_string());
+        assert_eq!(magnet_link.tr[4], "udp%3A%2F%2Ftracker.opentrackr.org%3A1337".to_string());
+        assert_eq!(magnet_link.tr[5], "wss%3A%2F%2Ftracker.btorrent.xyz".to_string());
+        assert_eq!(magnet_link.tr[6], "wss%3A%2F%2Ftracker.fastcast.nz".to_string());
+        assert_eq!(magnet_link.tr[7], "wss%3A%2F%2Ftracker.openwebtorrent.com".to_string());
+        assert_eq!(magnet_link.ws, "https%3A%2F%2Fwebtorrent.io%2Ftorrents%2F".to_string());
+        assert_eq!(magnet_link.xs, "https%3A%2F%2Fwebtorrent.io%2Ftorrents%2Fsintel.torrent".to_string());
+        assert_eq!(magnet_link.kt, String::new());
+        assert_eq!(magnet_link.acceptable_source, String::new());
+        assert_eq!(magnet_link.mt, String::new());
     }
 }
