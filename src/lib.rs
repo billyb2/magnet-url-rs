@@ -11,8 +11,8 @@ const KEYWORD_TOPIC_RE_STR: &str = r"kt=([A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\{}\-]*)
 const EXACT_SOURCE_RE_STR: &str = r"xs=((\w+)://[A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\\-]*)(&|$|\s)";
 const EXACT_LENGTH_RE_STR: &str = r"xl=(\d*)(&|$|\s)";
 const WEB_SEED_RE_STR: &str = r"ws=([A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\{}\-]*)(&|$|\s)";
-const ACCEPTABLE_SOURCE_RE_STR: &str = r"as=((\w+)://[A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\\-]*)(&|$|\s))";
-const MANIFEST_TOPIC_RE_STR: &str = r"mt=((\w+)://[A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\\-]*|urn:(sha1|btih|ed2k|aich|kzhash|md5|tree:tiger):([A-Fa-f0-9]+|[A-Za-z2-7]+))(&|$|\s))";
+const ACCEPTABLE_SOURCE_RE_STR: &str = r"as=((\w+)://[A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\\-]*)(&|$|\s)";
+const MANIFEST_TOPIC_RE_STR: &str = r"mt=((\w+)://[A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\\-]*|urn:(sha1|btih|ed2k|aich|kzhash|md5|tree:tiger):([A-Fa-f0-9]+|[A-Za-z2-7]+))(&|$|\s)";
 
 
 ///# Intro
