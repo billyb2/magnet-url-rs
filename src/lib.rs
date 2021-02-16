@@ -25,7 +25,7 @@ const MANIFEST_TOPIC_RE_STR: &str = r"mt=((\w+)://[A-Za-z0-9!@#$%^:*<>,?/()_+=.{
 /// Parsing a magnet is very simple:
 ///
 /// ```
-/// use magnet_url:Magnet;
+/// use magnet_url::Magnet;
 /// let magnet-url = Magnet::new("magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=Sintel&tr=udp%3A%2F%2Fexplodie.org%3A6969&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Ftracker.empire-js.us%3A1337&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337&tr=wss%3A%2F%2Ftracker.btorrent.xyz&tr=wss%3A%2F%2Ftracker.fastcast.nz&tr=wss%3A%2F%2Ftracker.openwebtorrent.com&ws=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2F&xs=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2Fsintel.torrent");
 /// ```
 ///
@@ -33,7 +33,7 @@ const MANIFEST_TOPIC_RE_STR: &str = r"mt=((\w+)://[A-Za-z0-9!@#$%^:*<>,?/()_+=.{
 /// access one of these fields is also very simple:
 ///
 /// ```
-/// use magnet_url:Magnet;
+/// use magnet_url::Magnet;
 /// let magnet-url = Magnet::new("magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=Sintel&tr=udp%3A%2F%2Fexplodie.org%3A6969&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Ftracker.empire-js.us%3A1337&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337&tr=wss%3A%2F%2Ftracker.btorrent.xyz&tr=wss%3A%2F%2Ftracker.fastcast.nz&tr=wss%3A%2F%2Ftracker.openwebtorrent.com&ws=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2F&xs=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2Fsintel.torrent");
 /// println!("{:?}", magnet-url.dn);
 /// ```
@@ -41,7 +41,7 @@ const MANIFEST_TOPIC_RE_STR: &str = r"mt=((\w+)://[A-Za-z0-9!@#$%^:*<>,?/()_+=.{
 /// If you'd like to modify parts of the magnet_url to customize it, that can be done as well!
 ///
 /// ```
-/// use magnet_url:Magnet;
+/// use magnet_url::Magnet;
 /// let mut magnet-url = Magnet::new("magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=Sintel&tr=udp%3A%2F%2Fexplodie.org%3A6969&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Ftracker.empire-js.us%3A1337&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337&tr=wss%3A%2F%2Ftracker.btorrent.xyz&tr=wss%3A%2F%2Ftracker.fastcast.nz&tr=wss%3A%2F%2Ftracker.openwebtorrent.com&ws=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2F&xs=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2Fsintel.torrent");
 /// println!("{:?}", magnet-url.dn);
 /// magnet_url.dn = String::from("hello_world");
@@ -52,7 +52,7 @@ const MANIFEST_TOPIC_RE_STR: &str = r"mt=((\w+)://[A-Za-z0-9!@#$%^:*<>,?/()_+=.{
 /// parameters!
 ///
 /// ```
-/// use magnet_url:Magnet;
+/// use magnet_url::Magnet;
 /// let magnet-url =
 /// //Note, this magnet won't actually download, sorry :/
 /// Magnet {
