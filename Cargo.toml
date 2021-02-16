@@ -1,5 +1,5 @@
 [package]
-name = "magnet-url"
+name = "magnet_url"
 version = "1.0.0"
 authors = ["William Batista <bootlegbilly@protonmail.ch>"]
 license-file = "LICENSE.md"
