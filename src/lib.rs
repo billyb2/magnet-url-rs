@@ -4,7 +4,6 @@ use regex::Regex;
 extern crate lazy_static;
 
 ///The regexes used to identify specific parts of the magnet
-const MAGNET_SPEC_RE_STR: &str = r"magnet:\?";
 const DISPLAY_NAME_RE_STR: &str = r"dn=([A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\{}\-]*)(&|$|\s)";
 const EXACT_TOPIC_RE_STR: &str = r"xt=urn:(sha1|btih|ed2k|aich|kzhash|md5|tree:tiger):([A-Fa-f0-9]+|[A-Za-z2-7]+)";
 const ADDRESS_TRACKER_RE_STR: &str = r"tr=([A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\{}\-]*)(&|$|\s)";
@@ -126,7 +125,6 @@ impl Magnet {
             static ref WEB_SEED_RE: Regex = Regex::new(WEB_SEED_RE_STR).unwrap();
             static ref ACCEPTABLE_SOURCE_RE: Regex = Regex::new(ACCEPTABLE_SOURCE_RE_STR).unwrap();
             static ref MANIFEST_TOPIC_RE: Regex = Regex::new(MANIFEST_TOPIC_RE_STR).unwrap();
-            static ref MAGNET_RE: Regex = Regex::new(MAGNET_RE_STR).unwrap();
         }
 
         let validate_regex = |regex: &Regex, re_group_index| -> String {
