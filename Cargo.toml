@@ -2,7 +2,7 @@
 name = "magnet-url"
 version = "1.0.3"
 authors = ["William Batista <bootlegbilly@protonmail.ch>"]
-license-file = "LICENSE.md"
+license = "MIT"
 description = "A simple, hackable magnet url parser in Rust"
 homepage = "https://github.com/billyb2/magnet-url-rs"
 repository = "https://github.com/billyb2/magnet-url-rs"
@@ -10,11 +10,6 @@ readme = "README.md"
 categories = ["parsing", "encoding", "parser-implementations"]
 keywords = ["torrent", "magnet", "magnet_url", "parse"]
 edition = "2018"
-
-[profile.release]
-lto = "fat"
-opt-level = 3
-codegen-units = 1
 
 [dependencies]
 lazy_static = "1"
