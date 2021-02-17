@@ -1,10 +1,29 @@
 [![Build Status](https://www.travis-ci.com/billyb2/parse-magnet-rs.svg?branch=main)](https://www.travis-ci.com/billyb2/parse-magnet-rs)
 # The Rust Magnet URL Parser!
-# Intro
-magnet_url-rs has the goal of, as you may have guessed, parsing the parts of magnets. It does
-this using some relatively simple regexes. The crate is designed to be very simple and efficient,
-with a lot of flexibility. It's also designed to be relatively easy to handle errors, and
-modification of it's source is greatly encouraged through documentation and it's license.
+# What is a magnet url
+A magnet is a URI scheme that identifies files by their hash, 
+ normally used in peer to peer file sharing networks (like 
+ Bittorrent). Basically, a magnet link identifies a torrent you 
+ want to download, and tells the torrent client how to download 
+ it. They make it very easy to share files over the internet, 
+ and use a combination of DHT and trackers to tell your torrent 
+ client where other peers who can share the file with you are.
+
+# Why is magnet_url
+While working on a side project, I realized that I had the 
+ misfortune of trying to get the component parts of a magnet-url 
+ and then do further processing of them. I quickly wrote some 
+ Regex for it, but then I realized that this would be really 
+ useful for other projects that are dealing with torrents in 
+ Rust. By making it modifiable, too, it would allow for the 
+ creation of custom magnet links, which would also be useful for
+ torrent based projects.
+
+# Why use magnet_url
+ magnet_url has the goal of, as you may have guessed, parsing the parts of magnets. It does
+ this using some relatively simple regexes. The crate is designed to be very simple and efficient,
+ with a lot of flexibility. It's also designed to be relatively easy to handle errors, and
+ modification of it's source is greatly encouraged through documentation and it's license.
 
 ## How to use this crate
 Parsing a magnet is very simple:
