@@ -14,3 +14,20 @@ edition = "2018"
 [dependencies]
 lazy_static = "1"
 regex = "1"
+
+[dev-dependencies]
+criterion = {version="0.3", features=["html_reports"]}
+
+[[bench]]
+name = "benchmark"
+harness = false
+
+[profile.bench]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1

@@ -97,6 +97,7 @@ const MANIFEST_TOPIC_RE_STR: &str = r"mt=((\w+)[A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\\
 /// use magnet_url::Magnet;
 /// let _magnet_link = Magnet::new("https://example.com");
 /// ```
+
 pub struct Magnet {
     ///Display Name of the torrent
     pub dn: String,
@@ -169,16 +170,22 @@ impl Magnet {
             dn: validate_regex(&DISPLAY_NAME_RE, 1),
             hash_type: validate_regex(&EXACT_TOPIC_RE, 1),
             xt: validate_regex(&EXACT_TOPIC_RE, 2),
-            xl: validate_regex(&EXACT_LENGTH_RE, 1).parse().unwrap_or(-1),
+            // Using a slightly modified match statement so it doesn't parse from str to String to int
+            xl: {
+                match &EXACT_LENGTH_RE.captures(magnet_str) {
+                    Some(m) => m.get(1).map_or("-1", |m| m.as_str()).parse().unwrap_or(-1),
+                    None => -1,
+                }
+
+            },
             xs: validate_regex(&EXACT_SOURCE_RE, 1),
             tr: {
                 let mut tr_vec: Vec<String> = Vec::new();
                 // Since tr is a vector, I can't just use the validate_regex function
-                if ADDRESS_TRACKER_RE.is_match(magnet_str) {
-                    for tr in ADDRESS_TRACKER_RE.captures_iter(magnet_str) {
-                        tr_vec.push(tr.get(1).map_or("", |m| m.as_str()).to_string());
-                    }
+                for tr in ADDRESS_TRACKER_RE.captures_iter(magnet_str) {
+                    tr_vec.push(tr.get(1).map_or("", |m| m.as_str()).to_string());
                 }
+
                 tr_vec
 
             },
