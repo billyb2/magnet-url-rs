@@ -4,6 +4,7 @@ use regex::Regex;
 extern crate lazy_static;
 
 ///The regexes used to identify specific parts of the magnet
+const MAGNET_URL_RE_STR: &str = r"^(stratum-|)magnet:\?";
 const DISPLAY_NAME_RE_STR: &str = r"dn=([A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\{}\-]*)(&|$|\s)";
 const EXACT_TOPIC_RE_STR: &str = r"xt=urn:(sha1|btih|ed2k|aich|kzhash|md5|tree:tiger):([A-Fa-f0-9]+|[A-Za-z2-7]+)";
 const ADDRESS_TRACKER_RE_STR: &str = r"tr=([A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\{}\-]*)(&|$|\s)";
@@ -71,7 +72,6 @@ const MANIFEST_TOPIC_RE_STR: &str = r"mt=((\w+)[A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\\
 ///
 /// ```
 /// use magnet_url::Magnet;
-/// let magneturl =
 /// //Note, this magnet won't actually download, sorry :/
 /// Magnet {
 ///     dn: "hello_world".to_string(),
@@ -90,6 +90,12 @@ const MANIFEST_TOPIC_RE_STR: &str = r"mt=((\w+)[A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\\
 ///     mt: String::new(),
 ///     xs: String::new(),
 /// };
+/// ```
+///
+/// Invalid magnet url's will result in a panic! (This will be changed to an error in v2.0.0
+/// ```#[should_panic]
+/// use magnet_url::Magnet;
+/// let _magnet_link = Magnet::new("https://example.com");
 /// ```
 pub struct Magnet {
     ///Display Name of the torrent
@@ -134,6 +140,7 @@ impl Magnet {
     */
     pub fn new (magnet_str: &str) -> Magnet {
         lazy_static! {
+            static ref MAGNET_URL_RE: Regex = Regex::new(MAGNET_URL_RE_STR).unwrap();
             static ref DISPLAY_NAME_RE: Regex = Regex::new(DISPLAY_NAME_RE_STR).unwrap();
             static ref EXACT_TOPIC_RE: Regex = Regex::new(EXACT_TOPIC_RE_STR).unwrap();
             static ref EXACT_LENGTH_RE: Regex = Regex::new(EXACT_LENGTH_RE_STR).unwrap();
@@ -143,6 +150,11 @@ impl Magnet {
             static ref WEB_SEED_RE: Regex = Regex::new(WEB_SEED_RE_STR).unwrap();
             static ref ACCEPTABLE_SOURCE_RE: Regex = Regex::new(ACCEPTABLE_SOURCE_RE_STR).unwrap();
             static ref MANIFEST_TOPIC_RE: Regex = Regex::new(MANIFEST_TOPIC_RE_STR).unwrap();
+        }
+
+        // Panicking is a temporary fix, in version 2.0.0 it will instead return an Error
+        if MAGNET_URL_RE.is_match(magnet_str) == false {
+            panic!("Invalid magnet url")
         }
 
         let validate_regex = |regex: &Regex, re_group_index| -> String {
@@ -205,5 +217,12 @@ mod tests {
         assert_eq!(magnet_link.kt, String::new());
         assert_eq!(magnet_link.acceptable_source, String::new());
         assert_eq!(magnet_link.mt, String::new());
+    }
+
+    #[test]
+    #[should_panic]
+    fn invalid_magnet_test() {
+        let _magnet_link = Magnet::new("https://example.com");
+
     }
 }
