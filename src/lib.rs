@@ -38,7 +38,7 @@ const MANIFEST_TOPIC_RE_STR: &str = r"mt=((\w+)[A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\\
 /// magnet_url has the goal of, as you may have guessed, parsing the parts of magnets. It does
 /// this using some relatively simple regexes. The crate is designed to be very simple and efficient,
 /// with a lot of flexibility. It's also designed to be relatively easy to handle errors, and
-/// modification of it's source is greatly encouraged through documentation and it's license.
+/// modification of its source is greatly encouraged through documentation and its license.
 ///
 /// ## How to use this crate
 /// Parsing a magnet is very simple:
@@ -160,7 +160,7 @@ impl Magnet {
 
         let validate_regex = |regex: &Regex, re_group_index| -> String {
             match regex.captures(magnet_str) {
-                Some(m) => m.get(re_group_index).map_or("", |m| m.as_str()).to_string(),
+                Some(m) => m.get(re_group_index).map_or(String::new(), |m| m.as_str().to_string()),
                 None => String::new()
             }
 
@@ -173,7 +173,7 @@ impl Magnet {
             // Using a slightly modified match statement so it doesn't parse from str to String to int
             xl: {
                 match &EXACT_LENGTH_RE.captures(magnet_str) {
-                    Some(m) => m.get(1).map_or("-1", |m| m.as_str()).parse().unwrap_or(-1),
+                    Some(m) => m.get(1).map_or(-1, |m| m.as_str().parse().unwrap()),
                     None => -1,
                 }
 
@@ -183,7 +183,7 @@ impl Magnet {
                 let mut tr_vec: Vec<String> = Vec::new();
                 // Since tr is a vector, I can't just use the validate_regex function
                 for tr in ADDRESS_TRACKER_RE.captures_iter(magnet_str) {
-                    tr_vec.push(tr.get(1).map_or("", |m| m.as_str()).to_string());
+                    tr_vec.push(tr.get(1).map_or(String::new(), |m| m.as_str().to_string()));
                 }
 
                 tr_vec

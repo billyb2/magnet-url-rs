@@ -22,7 +22,7 @@ torrent based projects.
 magnet_url has the goal of, as you may have guessed, parsing the parts of magnets. It does
 this using some relatively simple regexes. The crate is designed to be very simple and efficient,
 with a lot of flexibility. It's also designed to be relatively easy to handle errors, and
-modification of it's source is greatly encouraged through documentation and it's license.
+modification of its source is greatly encouraged through documentation and its license.
 
 ## How to use this crate
 Parsing a magnet is very simple:
