@@ -4,7 +4,6 @@ use regex::Regex;
 extern crate lazy_static;
 
 ///The regexes used to identify specific parts of the magnet
-const MAGNET_URL_RE_STR: &str = r"^(stratum-|)magnet:\?";
 const DISPLAY_NAME_RE_STR: &str = r"dn=([A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\{}\-]*)(&|$|\s)";
 const EXACT_TOPIC_RE_STR: &str = r"xt=urn:(sha1|btih|ed2k|aich|kzhash|md5|tree:tiger):([A-Fa-f0-9]+|[A-Za-z2-7]+)";
 const ADDRESS_TRACKER_RE_STR: &str = r"tr=([A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\{}\-]*)(&|$|\s)";
@@ -16,21 +15,21 @@ const ACCEPTABLE_SOURCE_RE_STR: &str = r"as=((\w+)[A-Za-z0-9!@#$%^:*<>,?/()_+=.{
 const MANIFEST_TOPIC_RE_STR: &str = r"mt=((\w+)[A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\\-]*|urn:(sha1|btih|ed2k|aich|kzhash|md5|tree:tiger):([A-Fa-f0-9]+|[A-Za-z2-7]+))(&|$|\s)";
 
 ///# What is a magnet url
-///A magnet is a URI scheme that identifies files by their hash, 
-/// normally used in peer to peer file sharing networks (like 
-/// Bittorrent). Basically, a magnet link identifies a torrent you 
-/// want to download, and tells the torrent client how to download 
-/// it. They make it very easy to share files over the internet, 
-/// and use a combination of DHT and trackers to tell your torrent 
+///A magnet is a URI scheme that identifies files by their hash,
+/// normally used in peer to peer file sharing networks (like
+/// Bittorrent). Basically, a magnet link identifies a torrent you
+/// want to download, and tells the torrent client how to download
+/// it. They make it very easy to share files over the internet,
+/// and use a combination of DHT and trackers to tell your torrent
 /// client where other peers who can share the file with you are.
 ///
 ///# Why is magnet_url
-///While working on a side project, I realized that I had the 
-/// misfortune of trying to get the component parts of a magnet-url 
-/// and then do further processing of them. I quickly wrote some 
-/// Regex for it, but then I realized that this would be really 
-/// useful for other projects that are dealing with torrents in 
-/// Rust. By making it modifiable, too, it would allow for the 
+///While working on a side project, I realized that I had the
+/// misfortune of trying to get the component parts of a magnet-url
+/// and then do further processing of them. I quickly wrote some
+/// Regex for it, but then I realized that this would be really
+/// useful for other projects that are dealing with torrents in
+/// Rust. By making it modifiable, too, it would allow for the
 /// creation of custom magnet links, which would also be useful for
 /// torrent based projects.
 ///
@@ -135,13 +134,24 @@ pub struct Magnet {
 }
 
 impl Magnet {
+    pub fn gen_magnet_string(&self) -> String {
+        let mut magnet_string =
+        format!("magnet:?xt=urn:{}:{}&dn={}&xl={}&xs={}&kt={}&ws={}&as={}&mt={}", self.hash_type, self.xt, self.dn, self.xl, self.xs, self.kt, self.ws, self.acceptable_source, self.mt);
+
+        for tracker in &self.tr {
+            magnet_string = format!("{}&tr={}", magnet_string, tracker)
+        }
+
+        magnet_string
+
+    }
+
     /**Given a magnet URL, identify the specific parts, and return the Magnet struct. If the program
     can't identify a specific part of the magnet, then it will either give an empty version of what
     its value would normally be (such as an empty string, an empty vector, or in the case of xl, -1)
     */
     pub fn new (magnet_str: &str) -> Magnet {
         lazy_static! {
-            static ref MAGNET_URL_RE: Regex = Regex::new(MAGNET_URL_RE_STR).unwrap();
             static ref DISPLAY_NAME_RE: Regex = Regex::new(DISPLAY_NAME_RE_STR).unwrap();
             static ref EXACT_TOPIC_RE: Regex = Regex::new(EXACT_TOPIC_RE_STR).unwrap();
             static ref EXACT_LENGTH_RE: Regex = Regex::new(EXACT_LENGTH_RE_STR).unwrap();
@@ -154,7 +164,7 @@ impl Magnet {
         }
 
         // Panicking is a temporary fix, in version 2.0.0 it will instead return an Error
-        if MAGNET_URL_RE.is_match(magnet_str) == false {
+        if &magnet_str[0..8] != "magnet:?" {
             panic!("Invalid magnet url")
         }
 
@@ -205,7 +215,7 @@ mod tests {
     #[test]
     fn sintel_test() {
         let magnet_link = Magnet::new("magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=Sintel&tr=udp%3A%2F%2Fexplodie.org%3A6969&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Ftracker.empire-js.us%3A1337&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337&tr=wss%3A%2F%2Ftracker.btorrent.xyz&tr=wss%3A%2F%2Ftracker.fastcast.nz&tr=wss%3A%2F%2Ftracker.openwebtorrent.com&ws=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2F&xs=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2Fsintel.torrent");
-        
+
         assert_eq!(magnet_link.dn, "Sintel".to_string());
         assert_eq!(magnet_link.hash_type, "btih".to_string());
         assert_eq!(magnet_link.xt, "08ada5a7a6183aae1e09d831df6748d566095a10".to_string());
@@ -224,6 +234,8 @@ mod tests {
         assert_eq!(magnet_link.kt, String::new());
         assert_eq!(magnet_link.acceptable_source, String::new());
         assert_eq!(magnet_link.mt, String::new());
+
+        println!("{}", magnet_link.gen_magnet_string());
     }
 
     #[test]
