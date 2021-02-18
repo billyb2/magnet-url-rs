@@ -91,12 +91,40 @@ const MANIFEST_TOPIC_RE_STR: &str = r"mt=((\w+)[A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\\
 /// };
 /// ```
 ///
+/// From a Magnet struct, you can generate a magnet string again
+///
+/// ```
+/// use magnet_url::Magnet;
+/// //Note, this magnet won't actually download, sorry :/
+/// let magnet_struct = Magnet {
+///     dn: "hello_world".to_string(),
+///     hash_type: "sha1".to_string(),
+///     xt: "2aae6c35c94fcfb415dbe95f408b9ce91ee846ed".to_string(),
+///     xl: 1234567890,
+///     tr:
+///         {
+///             let mut tr_vec = Vec::new();
+///             tr_vec.push("https://example.com/".to_string());
+///             tr_vec
+///         },
+///     kt: "cool+stuff".to_string(),
+///     ws: String::new(),
+///     acceptable_source: String::new(),
+///     mt: String::new(),
+///     xs: String::new(),
+/// };
+///
+/// let magnet_string = magnet_struct.to_string();
+/// println!("{}", magnet_string);
+/// ```
+///
 /// Invalid magnet url's will result in a panic! (This will be changed to an error in v2.0.0
 /// ```#[should_panic]
 /// use magnet_url::Magnet;
 /// let _magnet_link = Magnet::new("https://example.com");
 /// ```
 
+#[derive(Debug, Clone, Hash, PartialEq)]
 pub struct Magnet {
     ///Display Name of the torrent
     pub dn: String,
@@ -134,23 +162,70 @@ pub struct Magnet {
 }
 
 impl Magnet {
-    pub fn gen_magnet_string(&self) -> String {
-        let mut magnet_string =
-        format!("magnet:?xt=urn:{}:{}&dn={}&xl={}&xs={}&kt={}&ws={}&as={}&mt={}", self.hash_type, self.xt, self.dn, self.xl, self.xs, self.kt, self.ws, self.acceptable_source, self.mt);
+    /**
+    This generates a magnet url string given a Magnet struct
+    */
+    pub fn to_string(&self) -> String {
 
-        for tracker in &self.tr {
-            magnet_string = format!("{}&tr={}", magnet_string, tracker)
+        let mut magnet_string = String::from("magnet:?");
+
+        if self.xt != String::new() {
+            magnet_string = format!("{}{}{}:{}", magnet_string, "xt=urn:", self.hash_type, self.xt);
         }
+
+        let add_to_mag_string = |p_name: String, p_val: &String| -> String {
+            if p_val != &String::new() {
+                format!("&{}={}", p_name, p_val)
+            } else {
+                String::new()
+            }
+        };
+
+        magnet_string = format!("{}{}", magnet_string, add_to_mag_string(String::from("dn"), &self.dn));
+        if self.xl != -1 {
+            magnet_string = format!("{}&xl={}", magnet_string, &self.xl);
+        }
+
+        magnet_string = {
+            let mut tr_string = String::new();
+            for tracker in &self.tr {
+                tr_string = format!("{}&tr={}", tr_string, tracker);
+            }
+
+            format!("{}{}", magnet_string, tr_string)
+        };
+
+        magnet_string = format!("{}{}", magnet_string, add_to_mag_string(String::from("ws"), &self.ws));
+        magnet_string = format!("{}{}", magnet_string, add_to_mag_string(String::from("xs"), &self.xs));
+        magnet_string = format!("{}{}", magnet_string, add_to_mag_string(String::from("kt"), &self.kt));
+        magnet_string = format!("{}{}", magnet_string, add_to_mag_string(String::from("as"), &self.acceptable_source));
+        magnet_string = format!("{}{}", magnet_string, add_to_mag_string(String::from("mt"), &self.mt));
+
 
         magnet_string
 
     }
 
+
+    ///Just calls new_no_validation, but validates the string given before running it through.
+    /// This is the recommended way of creating a nw Magnet struct, if you're unsure of the quality
+    /// of the magnet url's you input.
+    pub fn new(magnet_str: &str) -> Magnet {
+        // Panicking is a temporary fix, in version 2.0.0 it will instead return an Error
+        if &magnet_str[0..8] != "magnet:?" {
+            panic!("Invalid magnet url")
+        }
+
+        Magnet::new_no_validation(magnet_str)
+    }
+
     /**Given a magnet URL, identify the specific parts, and return the Magnet struct. If the program
     can't identify a specific part of the magnet, then it will either give an empty version of what
-    its value would normally be (such as an empty string, an empty vector, or in the case of xl, -1)
+    its value would normally be (such as an empty string, an empty vector, or in the case of xl, -1).
+    It also doesn't validate whether the magnet url is good, which makes it faster, but dangerous!
+    Only use this function if you know for certain that the magnet url given is valid.
     */
-    pub fn new (magnet_str: &str) -> Magnet {
+    pub fn new_no_validation (magnet_str: &str) -> Magnet {
         lazy_static! {
             static ref DISPLAY_NAME_RE: Regex = Regex::new(DISPLAY_NAME_RE_STR).unwrap();
             static ref EXACT_TOPIC_RE: Regex = Regex::new(EXACT_TOPIC_RE_STR).unwrap();
@@ -161,11 +236,6 @@ impl Magnet {
             static ref WEB_SEED_RE: Regex = Regex::new(WEB_SEED_RE_STR).unwrap();
             static ref ACCEPTABLE_SOURCE_RE: Regex = Regex::new(ACCEPTABLE_SOURCE_RE_STR).unwrap();
             static ref MANIFEST_TOPIC_RE: Regex = Regex::new(MANIFEST_TOPIC_RE_STR).unwrap();
-        }
-
-        // Panicking is a temporary fix, in version 2.0.0 it will instead return an Error
-        if &magnet_str[0..8] != "magnet:?" {
-            panic!("Invalid magnet url")
         }
 
         let validate_regex = |regex: &Regex, re_group_index| -> String {
@@ -214,7 +284,8 @@ mod tests {
 
     #[test]
     fn sintel_test() {
-        let magnet_link = Magnet::new("magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=Sintel&tr=udp%3A%2F%2Fexplodie.org%3A6969&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Ftracker.empire-js.us%3A1337&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337&tr=wss%3A%2F%2Ftracker.btorrent.xyz&tr=wss%3A%2F%2Ftracker.fastcast.nz&tr=wss%3A%2F%2Ftracker.openwebtorrent.com&ws=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2F&xs=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2Fsintel.torrent");
+        const MAGNET_STR: &str = "magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=Sintel&tr=udp%3A%2F%2Fexplodie.org%3A6969&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Ftracker.empire-js.us%3A1337&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337&tr=wss%3A%2F%2Ftracker.btorrent.xyz&tr=wss%3A%2F%2Ftracker.fastcast.nz&tr=wss%3A%2F%2Ftracker.openwebtorrent.com&ws=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2F&xs=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2Fsintel.torrent";
+        let magnet_link = Magnet::new(MAGNET_STR);
 
         assert_eq!(magnet_link.dn, "Sintel".to_string());
         assert_eq!(magnet_link.hash_type, "btih".to_string());
@@ -235,13 +306,42 @@ mod tests {
         assert_eq!(magnet_link.acceptable_source, String::new());
         assert_eq!(magnet_link.mt, String::new());
 
-        println!("{}", magnet_link.gen_magnet_string());
+        //Need to recreate a magnet struct from the string, since the elements could be in any order
+        assert_eq!(Magnet::new(&magnet_link.to_string()), magnet_link);
+        //Also tests PartialEq
+        assert_eq!(Magnet::new(&magnet_link.to_string()) == magnet_link, true);
     }
 
     #[test]
     #[should_panic]
     fn invalid_magnet_test() {
         let _magnet_link = Magnet::new("https://example.com");
+
+    }
+
+    #[test]
+    fn not_equal_magnet_test() {
+        //These two torrents aren't even close to equal
+        const MAGNET_STR_1: &str = "magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=Sintel&tr=udp%3A%2F%2Fexplodie.org%3A6969&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Ftracker.empire-js.us%3A1337&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337&tr=wss%3A%2F%2Ftracker.btorrent.xyz&tr=wss%3A%2F%2Ftracker.fastcast.nz&tr=wss%3A%2F%2Ftracker.openwebtorrent.com&ws=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2F&xs=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2Fsintel.torrent";
+        const MAGNET_STR_2: &str = "magnet:?xt=urn:btih:da826adb2ba4933500d83c19bbdfa73ee28f34d5&dn=devuan%5Fbeowulf&tr=udp%3A%2F%2F9.rarbg.me%3A2710%2Fannounce&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&tr=udp%3A%2F%2Ftracker.cyberia.is%3A6969%2Fannounce";
+
+        let magnet_link_1 = Magnet::new(MAGNET_STR_1);
+        let magnet_link_2 = Magnet::new(MAGNET_STR_2);
+
+        //These two torrents, on the other hand, are very similar
+        const MAGNET_STR_3: &str = "magnet:?xt=urn:btih:da826adb2ba4933500d83c19bbdfa73ee28f34d5&dn=devuan%5Fbeowulf&tr=udp%3A%2F%2F9.rarbg.me%3A2710%2Fannounce&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&tr=udp%3A%2F%2Ftracker.cyberia.is%3A6969%2Fannounce";
+        const MAGNET_STR_4: &str = "magnet:?xt=urn:btih:da826adb2ba4933500d83c19bbdfa73ee28f34d5&dn=devuan%5Fbeowulf&tr=udp%3A%2F%2F9.rarbg.me%3A2710%2Fannounce&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&tr=udp%3A%2F%2Ftracker.cyberia.is%3A6969%2Fannounce&tr=https://example.com/fake_tracker";
+
+        let magnet_link_3 = Magnet::new(MAGNET_STR_3);
+        let magnet_link_4 = Magnet::new(MAGNET_STR_4);
+
+        assert_ne!(magnet_link_1, magnet_link_2);
+        assert_ne!(magnet_link_3, magnet_link_4);
+
+        //magnet_link_2 and magnet_link_3 are exactly the same
+        assert_eq!(magnet_link_2, magnet_link_3);
+        //Tests PartialEq instead of Debug
+        assert_eq!(magnet_link_2 == magnet_link_3, true);
 
     }
 }
