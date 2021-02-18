@@ -1,4 +1,3 @@
-[![Build Status](https://www.travis-ci.com/billyb2/parse-magnet-rs.svg?branch=main)](https://www.travis-ci.com/billyb2/parse-magnet-rs)
 # What is a magnet url
 A magnet is a URI scheme that identifies files by their hash,
 normally used in peer to peer file sharing networks (like
@@ -74,6 +73,33 @@ parameters!
      mt: String::new(),
      xs: String::new(),
  };
+ ```
+
+From a Magnet struct, you can generate a magnet string again
+
+ ```
+ use magnet_url::Magnet;
+ //Note, this magnet won't actually download, sorry :/
+ let magnet_struct = Magnet {
+     dn: "hello_world".to_string(),
+     hash_type: "sha1".to_string(),
+     xt: "2aae6c35c94fcfb415dbe95f408b9ce91ee846ed".to_string(),
+     xl: 1234567890,
+     tr:
+         {
+             let mut tr_vec = Vec::new();
+             tr_vec.push("https://example.com/".to_string());
+             tr_vec
+         },
+     kt: "cool+stuff".to_string(),
+     ws: String::new(),
+     acceptable_source: String::new(),
+     mt: String::new(),
+     xs: String::new(),
+ };
+
+ let magnet_string = magnet_struct.to_string();
+ println!("{}", magnet_string);
  ```
 
 Invalid magnet url's will result in a panic! (This will be changed to an error in v2.0.0
