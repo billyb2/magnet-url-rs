@@ -1,4 +1,5 @@
 use regex::Regex;
+use std::fmt;
 
 #[macro_use]
 extern crate lazy_static;
@@ -162,51 +163,6 @@ pub struct Magnet {
 }
 
 impl Magnet {
-    /**
-    This generates a magnet url string given a Magnet struct
-    */
-    pub fn to_string(&self) -> String {
-
-        let mut magnet_string = String::from("magnet:?");
-
-        if self.xt != String::new() {
-            magnet_string = format!("{}{}{}:{}", magnet_string, "xt=urn:", self.hash_type, self.xt);
-        }
-
-        let add_to_mag_string = |p_name: String, p_val: &String| -> String {
-            if p_val != &String::new() {
-                format!("&{}={}", p_name, p_val)
-            } else {
-                String::new()
-            }
-        };
-
-        magnet_string = format!("{}{}", magnet_string, add_to_mag_string(String::from("dn"), &self.dn));
-        if self.xl != -1 {
-            magnet_string = format!("{}&xl={}", magnet_string, &self.xl);
-        }
-
-        magnet_string = {
-            let mut tr_string = String::new();
-            for tracker in &self.tr {
-                tr_string = format!("{}&tr={}", tr_string, tracker);
-            }
-
-            format!("{}{}", magnet_string, tr_string)
-        };
-
-        magnet_string = format!("{}{}", magnet_string, add_to_mag_string(String::from("ws"), &self.ws));
-        magnet_string = format!("{}{}", magnet_string, add_to_mag_string(String::from("xs"), &self.xs));
-        magnet_string = format!("{}{}", magnet_string, add_to_mag_string(String::from("kt"), &self.kt));
-        magnet_string = format!("{}{}", magnet_string, add_to_mag_string(String::from("as"), &self.acceptable_source));
-        magnet_string = format!("{}{}", magnet_string, add_to_mag_string(String::from("mt"), &self.mt));
-
-
-        magnet_string
-
-    }
-
-
     ///Just calls new_no_validation, but validates the string given before running it through.
     /// This is the recommended way of creating a nw Magnet struct, if you're unsure of the quality
     /// of the magnet url's you input.
@@ -275,6 +231,51 @@ impl Magnet {
             mt: validate_regex(&MANIFEST_TOPIC_RE, 1),
 
         }
+    }
+}
+
+impl fmt::Display for Magnet {
+    /*
+    This generates a magnet url string given a Magnet struct
+    */
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut magnet_string = String::from("magnet:?");
+
+        if self.xt != String::new() {
+            magnet_string = format!("{}{}{}:{}", magnet_string, "xt=urn:", self.hash_type, self.xt);
+        }
+
+        let add_to_mag_string = |p_name: String, p_val: &String| -> String {
+            if p_val != &String::new() {
+                format!("&{}={}", p_name, p_val)
+            } else {
+                String::new()
+            }
+        };
+
+        magnet_string = format!("{}{}", magnet_string, add_to_mag_string(String::from("dn"), &self.dn));
+        if self.xl != -1 {
+            magnet_string = format!("{}&xl={}", magnet_string, &self.xl);
+        }
+
+        magnet_string = {
+            let mut tr_string = String::new();
+            for tracker in &self.tr {
+                tr_string = format!("{}&tr={}", tr_string, tracker);
+            }
+
+            format!("{}{}", magnet_string, tr_string)
+        };
+
+        magnet_string = format!("{}{}", magnet_string, add_to_mag_string(String::from("ws"), &self.ws));
+        magnet_string = format!("{}{}", magnet_string, add_to_mag_string(String::from("xs"), &self.xs));
+        magnet_string = format!("{}{}", magnet_string, add_to_mag_string(String::from("kt"), &self.kt));
+        magnet_string = format!("{}{}", magnet_string, add_to_mag_string(String::from("as"), &self.acceptable_source));
+        magnet_string = format!("{}{}", magnet_string, add_to_mag_string(String::from("mt"), &self.mt));
+
+
+        write!(f, "{}", magnet_string)
+
     }
 }
 
