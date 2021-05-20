@@ -26,7 +26,7 @@ modification of its source is greatly encouraged through documentation and its l
 ## How to use this crate
 Parsing a magnet is very simple:
 
- ```
+ ```rust
  use magnet_url::Magnet;
  let magneturl = Magnet::new("magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=Sintel&tr=udp%3A%2F%2Fexplodie.org%3A6969&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Ftracker.empire-js.us%3A1337&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337&tr=wss%3A%2F%2Ftracker.btorrent.xyz&tr=wss%3A%2F%2Ftracker.fastcast.nz&tr=wss%3A%2F%2Ftracker.openwebtorrent.com&ws=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2F&xs=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2Fsintel.torrent");
  ```
@@ -34,7 +34,7 @@ Parsing a magnet is very simple:
 This returns the Magnet struct, which is made up of the fields listed below this section. To
 access one of these fields is also very simple:
 
- ```
+ ```rust
  use magnet_url::Magnet;
  let magneturl = Magnet::new("magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=Sintel&tr=udp%3A%2F%2Fexplodie.org%3A6969&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Ftracker.empire-js.us%3A1337&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337&tr=wss%3A%2F%2Ftracker.btorrent.xyz&tr=wss%3A%2F%2Ftracker.fastcast.nz&tr=wss%3A%2F%2Ftracker.openwebtorrent.com&ws=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2F&xs=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2Fsintel.torrent");
  println!("{:?}", magneturl.dn);
@@ -42,7 +42,7 @@ access one of these fields is also very simple:
 
 If you'd like to modify parts of the magnet_url to customize it, that can be done as well!
 
- ```
+ ```rust
  use magnet_url::Magnet;
  let mut magneturl = Magnet::new("magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=Sintel&tr=udp%3A%2F%2Fexplodie.org%3A6969&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Ftracker.empire-js.us%3A1337&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337&tr=wss%3A%2F%2Ftracker.btorrent.xyz&tr=wss%3A%2F%2Ftracker.fastcast.nz&tr=wss%3A%2F%2Ftracker.openwebtorrent.com&ws=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2F&xs=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2Fsintel.torrent");
  println!("{:?}", magneturl.dn);
@@ -53,7 +53,7 @@ If you'd like to modify parts of the magnet_url to customize it, that can be don
 In fact, you can construct your own magnet url as well, as long as you fill in all the
 parameters!
 
- ```
+ ```rust
  use magnet_url::Magnet;
  //Note, this magnet won't actually download, sorry :/
  Magnet {
@@ -77,7 +77,7 @@ parameters!
 
 From a Magnet struct, you can generate a magnet string again
 
- ```
+ ```rust
  use magnet_url::Magnet;
  //Note, this magnet won't actually download, sorry :/
  let magnet_struct = Magnet {
@@ -102,8 +102,9 @@ From a Magnet struct, you can generate a magnet string again
  println!("{}", magnet_string);
  ```
 
-Invalid magnet url's will result in a panic! (This will be changed to an error in v2.0.0
- ```#[should_panic]
+Invalid magnet url's will result in a `panic!` (This will be changed to an error in v2.0.0
+ ```rust
  use magnet_url::Magnet;
+ #[should_panic]
  let _magnet_link = Magnet::new("https://example.com");
  ```
