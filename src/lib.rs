@@ -78,12 +78,7 @@ const MANIFEST_TOPIC_RE_STR: &str = r"mt=((\w+)[A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\\
 ///     hash_type: "sha1".to_string(),
 ///     xt: "2aae6c35c94fcfb415dbe95f408b9ce91ee846ed".to_string(),
 ///     xl: 1234567890,
-///     tr:
-///         {
-///             let mut tr_vec = Vec::new();
-///             tr_vec.push("https://example.com/".to_string());
-///             tr_vec
-///         },
+///     tr: vec!["https://example.com/".to_string()],
 ///     kt: "cool+stuff".to_string(),
 ///     ws: String::new(),
 ///     acceptable_source: String::new(),
