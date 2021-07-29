@@ -1,6 +1,6 @@
 [package]
 name = "magnet-url"
-version = "1.2.2"
+version = "2.0.0"
 authors = ["William Batista <bootlegbilly@protonmail.ch>"]
 license = "MIT"
 description = "A simple, hackable magnet url parser in Rust"

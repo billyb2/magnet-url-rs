@@ -48,12 +48,12 @@ const MANIFEST_TOPIC_RE_STR: &str = r"mt=((\w+)[A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\\
 /// let magneturl = Magnet::new("magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=Sintel&tr=udp%3A%2F%2Fexplodie.org%3A6969&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Ftracker.empire-js.us%3A1337&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337&tr=wss%3A%2F%2Ftracker.btorrent.xyz&tr=wss%3A%2F%2Ftracker.fastcast.nz&tr=wss%3A%2F%2Ftracker.openwebtorrent.com&ws=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2F&xs=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2Fsintel.torrent");
 /// ```
 ///
-/// This returns the Magnet struct, which is made up of the fields listed below this section. To
+/// This returns the Magnet struct, which is made up of the fields listed below this section, wrapped aroud a Result<Magnet, MagnetError>. To
 /// access one of these fields is also very simple:
 ///
 /// ```
 /// use magnet_url::Magnet;
-/// let magneturl = Magnet::new("magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=Sintel&tr=udp%3A%2F%2Fexplodie.org%3A6969&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Ftracker.empire-js.us%3A1337&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337&tr=wss%3A%2F%2Ftracker.btorrent.xyz&tr=wss%3A%2F%2Ftracker.fastcast.nz&tr=wss%3A%2F%2Ftracker.openwebtorrent.com&ws=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2F&xs=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2Fsintel.torrent");
+/// let magneturl = Magnet::new("magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=Sintel&tr=udp%3A%2F%2Fexplodie.org%3A6969&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Ftracker.empire-js.us%3A1337&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337&tr=wss%3A%2F%2Ftracker.btorrent.xyz&tr=wss%3A%2F%2Ftracker.fastcast.nz&tr=wss%3A%2F%2Ftracker.openwebtorrent.com&ws=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2F&xs=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2Fsintel.torrent").unwrap();
 /// println!("{:?}", magneturl.dn);
 /// ```
 ///
@@ -61,9 +61,9 @@ const MANIFEST_TOPIC_RE_STR: &str = r"mt=((\w+)[A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\\
 ///
 /// ```
 /// use magnet_url::Magnet;
-/// let mut magneturl = Magnet::new("magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=Sintel&tr=udp%3A%2F%2Fexplodie.org%3A6969&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Ftracker.empire-js.us%3A1337&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337&tr=wss%3A%2F%2Ftracker.btorrent.xyz&tr=wss%3A%2F%2Ftracker.fastcast.nz&tr=wss%3A%2F%2Ftracker.openwebtorrent.com&ws=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2F&xs=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2Fsintel.torrent");
+/// let mut magneturl = Magnet::new("magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=Sintel&tr=udp%3A%2F%2Fexplodie.org%3A6969&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Ftracker.empire-js.us%3A1337&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337&tr=wss%3A%2F%2Ftracker.btorrent.xyz&tr=wss%3A%2F%2Ftracker.fastcast.nz&tr=wss%3A%2F%2Ftracker.openwebtorrent.com&ws=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2F&xs=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2Fsintel.torrent").unwrap();
 /// println!("{:?}", magneturl.dn);
-/// magneturl.dn = String::from("hello_world");
+/// magneturl.dn = Some(String::from("hello_world"));
 /// println!("{:?}", magneturl.dn);
 /// ```
 ///
@@ -74,16 +74,16 @@ const MANIFEST_TOPIC_RE_STR: &str = r"mt=((\w+)[A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\\
 /// use magnet_url::Magnet;
 /// //Note, this magnet won't actually download, sorry :/
 /// Magnet {
-///     dn: "hello_world".to_string(),
-///     hash_type: "sha1".to_string(),
-///     xt: "2aae6c35c94fcfb415dbe95f408b9ce91ee846ed".to_string(),
-///     xl: 1234567890,
+///     dn: Some("hello_world".to_string()),
+///     hash_type: Some("sha1".to_string()),
+///     xt: Some("2aae6c35c94fcfb415dbe95f408b9ce91ee846ed".to_string()),
+///     xl: Some(1234567890),
 ///     tr: vec!["https://example.com/".to_string()],
-///     kt: "cool+stuff".to_string(),
-///     ws: String::new(),
-///     acceptable_source: String::new(),
-///     mt: String::new(),
-///     xs: String::new(),
+///     kt: Some("cool+stuff".to_string()),
+///     ws: None,
+///     acceptable_source: None,
+///     mt: None,
+///     xs: None,
 /// };
 /// ```
 ///
@@ -93,82 +93,69 @@ const MANIFEST_TOPIC_RE_STR: &str = r"mt=((\w+)[A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\\
 /// use magnet_url::Magnet;
 /// //Note, this magnet won't actually download, sorry :/
 /// let magnet_struct = Magnet {
-///     dn: "hello_world".to_string(),
-///     hash_type: "sha1".to_string(),
-///     xt: "2aae6c35c94fcfb415dbe95f408b9ce91ee846ed".to_string(),
-///     xl: 1234567890,
-///     tr:
-///         {
-///             let mut tr_vec = Vec::new();
-///             tr_vec.push("https://example.com/".to_string());
-///             tr_vec
-///         },
-///     kt: "cool+stuff".to_string(),
-///     ws: String::new(),
-///     acceptable_source: String::new(),
-///     mt: String::new(),
-///     xs: String::new(),
+///     dn: Some("hello_world".to_string()),
+///     hash_type: Some("sha1".to_string()),
+///     xt: Some("2aae6c35c94fcfb415dbe95f408b9ce91ee846ed".to_string()),
+///     xl: Some(1234567890),
+///     tr: vec!["https://example.com/".to_string()],
+///     kt: Some("cool+stuff".to_string()),
+///     ws: None,
+///     acceptable_source: None,
+///     mt: None,
+///     xs: None,
 /// };
 ///
 /// let magnet_string = magnet_struct.to_string();
 /// println!("{}", magnet_string);
 /// ```
 ///
-/// Invalid magnet url's will result in a panic! (This will be changed to an error in v2.0.0
+/// Invalid magnet url's will result in an Error, which can be handled appropriately
 /// ```#[should_panic]
 /// use magnet_url::Magnet;
-/// let _magnet_link = Magnet::new("https://example.com");
+/// let _magnet_link = Magnet::new("https://example.com").unwrap();
 /// ```
+
+/// The various ways the new function can fail
+#[derive(Debug, Clone, Hash, PartialEq)]
+pub enum MagnetError {
+    NotAMagnetURL,
+}
 
 #[derive(Debug, Clone, Hash, PartialEq)]
 pub struct Magnet {
     ///Display Name of the torrent
-    pub dn: String,
+    pub dn: Option<String>,
     ///type of hash used in the exact topic
-    pub hash_type: String,
+    pub hash_type: Option<String>,
     ///eXact Topic: URN containing the file hash. The URN is specific to the protocol so a file hash
     /// URN under btih (BitTorrent) would be completely different than the file hash URN for ed2k
-    pub xt: String,
+    pub xt: Option<String>,
     ///eXact Length: The size (in bytes)
-    ///The length is isize instead of usize since it makes error handling easier, as -1 is given if
-    /// no length is set. I considered making it a String, but decided against it since it's simpler
-    /// for the developer when they can just deal with an integer
-    pub xl: isize,
+    pub xl: Option<u64>,
     ///eXact Source: Either an HTTP (or HTTPS, FTP, FTPS, etc.) download source for the file pointed
     /// to by the Magnet link, the address of a P2P source for the file or the address of a hub (in
     /// the case of DC++), by which a client tries to connect directly, asking for the file and/or
     /// its sources. This field is commonly used by P2P clients to store the source, and may include
     /// the file hash.
-    pub xs: String,
+    pub xs: Option<String>,
     ///address TRacker: Tracker URL; used to obtain resources for BitTorrent downloads without a
     /// need for DHT support. The value must be URL encoded
     pub tr: Vec<String>,
     ///Keyword Topic: Specifies a string of search keywords to search for in P2P networks, rather
     /// than a particular file. Also set as a vector since there will likely be more than one
-    pub kt: String,
+    pub kt: Option<String>,
     ///Web Seed: The payload data served over HTTP(S)
-    pub ws: String,
+    pub ws: Option<String>,
     ///Acceptable Source: Refers to a direct download from a web server. Regarded as only a
     /// fall-back source in case a client is unable to locate and/or download the linked-to file in its supported P2P network(s)
     ///as is a reserved keyword in Rust, so unfortunately this library must use the full name
-    pub acceptable_source: String,
+    pub acceptable_source: Option<String>,
     ///Manifest Topic: Link to the metafile that contains a list of magneto (MAGMA –
     /// MAGnet MAnifest); i.e. a link to a list of links
-    pub mt: String,
+    pub mt: Option<String>,
 }
 
 impl Magnet {
-    ///Just calls new_no_validation, but validates the string given before running it through.
-    /// This is the recommended way of creating a nw Magnet struct, if you're unsure of the quality
-    /// of the magnet url's you input.
-    pub fn new(magnet_str: &str) -> Magnet {
-        // Panicking is a temporary fix, in version 2.0.0 it will instead return an Error
-        if &magnet_str[0..8] != "magnet:?" {
-            panic!("Invalid magnet url")
-        }
-
-        Magnet::new_no_validation(magnet_str)
-    }
 
     /**Given a magnet URL, identify the specific parts, and return the Magnet struct. If the program
     can't identify a specific part of the magnet, then it will either give an empty version of what
@@ -189,10 +176,10 @@ impl Magnet {
             static ref MANIFEST_TOPIC_RE: Regex = Regex::new(MANIFEST_TOPIC_RE_STR).unwrap();
         }
 
-        let validate_regex = |regex: &Regex, re_group_index| -> String {
+        let validate_regex = |regex: &Regex, re_group_index| -> Option<String> {
             match regex.captures(magnet_str) {
-                Some(m) => m.get(re_group_index).map_or(String::new(), |m| m.as_str().to_string()),
-                None => String::new()
+                Some(m) => m.get(re_group_index).map_or(None, |m| Some(m.as_str().to_string())),
+                None => None
             }
 
         };
@@ -204,8 +191,8 @@ impl Magnet {
             // Using a slightly modified match statement so it doesn't parse from str to String to int
             xl: {
                 match &EXACT_LENGTH_RE.captures(magnet_str) {
-                    Some(m) => m.get(1).map_or(-1, |m| m.as_str().parse().unwrap()),
-                    None => -1,
+                    Some(m) => m.get(1).map_or(None, |m| Some(m.as_str().parse().unwrap())),
+                    None => None,
                 }
 
             },
@@ -227,6 +214,19 @@ impl Magnet {
 
         }
     }
+
+    /// The recommended way of creating magnets. The same as new_no_validation, but does validation
+    #[inline]
+    pub fn new(magnet_str: &str) -> Result<Magnet, MagnetError> {
+        if !magnet_str.starts_with("magnet:?") {
+            Err(MagnetError::NotAMagnetURL)
+
+        } else {
+            Ok(Magnet::new_no_validation(magnet_str))
+
+        }
+
+    }
 }
 
 impl fmt::Display for Magnet {
@@ -236,21 +236,24 @@ impl fmt::Display for Magnet {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut magnet_string = String::from("magnet:?");
 
-        if self.xt != String::new() {
-            magnet_string = format!("{}{}{}:{}", magnet_string, "xt=urn:", self.hash_type, self.xt);
+        if let Some(xt) = &self.xt {
+            magnet_string = format!("{}{}{}:{}", magnet_string, "xt=urn:", self.hash_type.as_ref().unwrap_or(&String::new()), xt);
         }
 
-        let add_to_mag_string = |p_name: String, p_val: &String| -> String {
-            if p_val != &String::new() {
+        let add_to_mag_string = |p_name: String, p_val: &Option<String>| -> String {
+            if let Some(p_val) = p_val {
                 format!("&{}={}", p_name, p_val)
+
             } else {
                 String::new()
+
             }
         };
 
         magnet_string = format!("{}{}", magnet_string, add_to_mag_string(String::from("dn"), &self.dn));
-        if self.xl != -1 {
-            magnet_string = format!("{}&xl={}", magnet_string, &self.xl);
+
+        if let Some(xl) = &self.xl {
+            magnet_string = format!("{}&xl={}", magnet_string, xl);
         }
 
         magnet_string = {
@@ -276,18 +279,18 @@ impl fmt::Display for Magnet {
 
 #[cfg(test)]
 mod tests {
-    use crate::Magnet;
+    use crate::{Magnet, MagnetError};
 
     #[test]
     fn sintel_test() {
         const MAGNET_STR: &str = "magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=Sintel&tr=udp%3A%2F%2Fexplodie.org%3A6969&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Ftracker.empire-js.us%3A1337&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337&tr=wss%3A%2F%2Ftracker.btorrent.xyz&tr=wss%3A%2F%2Ftracker.fastcast.nz&tr=wss%3A%2F%2Ftracker.openwebtorrent.com&ws=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2F&xs=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2Fsintel.torrent";
-        let magnet_link = Magnet::new(MAGNET_STR);
+        let magnet_link = Magnet::new(MAGNET_STR).unwrap();
 
-        assert_eq!(magnet_link.dn, "Sintel".to_string());
-        assert_eq!(magnet_link.hash_type, "btih".to_string());
-        assert_eq!(magnet_link.xt, "08ada5a7a6183aae1e09d831df6748d566095a10".to_string());
-        assert_eq!(magnet_link.xl, -1);
-        assert_eq!(magnet_link.xs, "https%3A%2F%2Fwebtorrent.io%2Ftorrents%2Fsintel.torrent".to_string());
+        assert_eq!(magnet_link.dn, Some("Sintel".to_string()));
+        assert_eq!(magnet_link.hash_type, Some("btih".to_string()));
+        assert_eq!(magnet_link.xt, Some("08ada5a7a6183aae1e09d831df6748d566095a10".to_string()));
+        assert_eq!(magnet_link.xl, None);
+        assert_eq!(magnet_link.xs, Some("https%3A%2F%2Fwebtorrent.io%2Ftorrents%2Fsintel.torrent".to_string()));
         assert_eq!(magnet_link.tr[0], "udp%3A%2F%2Fexplodie.org%3A6969".to_string());
         assert_eq!(magnet_link.tr[1], "udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969".to_string());
         assert_eq!(magnet_link.tr[2], "udp%3A%2F%2Ftracker.empire-js.us%3A1337".to_string());
@@ -296,22 +299,21 @@ mod tests {
         assert_eq!(magnet_link.tr[5], "wss%3A%2F%2Ftracker.btorrent.xyz".to_string());
         assert_eq!(magnet_link.tr[6], "wss%3A%2F%2Ftracker.fastcast.nz".to_string());
         assert_eq!(magnet_link.tr[7], "wss%3A%2F%2Ftracker.openwebtorrent.com".to_string());
-        assert_eq!(magnet_link.ws, "https%3A%2F%2Fwebtorrent.io%2Ftorrents%2F".to_string());
-        assert_eq!(magnet_link.xs, "https%3A%2F%2Fwebtorrent.io%2Ftorrents%2Fsintel.torrent".to_string());
-        assert_eq!(magnet_link.kt, String::new());
-        assert_eq!(magnet_link.acceptable_source, String::new());
-        assert_eq!(magnet_link.mt, String::new());
+        assert_eq!(magnet_link.ws, Some("https%3A%2F%2Fwebtorrent.io%2Ftorrents%2F".to_string()));
+        assert_eq!(magnet_link.xs, Some("https%3A%2F%2Fwebtorrent.io%2Ftorrents%2Fsintel.torrent".to_string()));
+        assert_eq!(magnet_link.kt, None);
+        assert_eq!(magnet_link.acceptable_source, None);
+        assert_eq!(magnet_link.mt, None);
 
         //Need to recreate a magnet struct from the string, since the elements could be in any order
-        assert_eq!(Magnet::new(&magnet_link.to_string()), magnet_link);
+        assert_eq!(Magnet::new(&magnet_link.to_string()).unwrap(), magnet_link);
         //Also tests PartialEq
-        assert_eq!(Magnet::new(&magnet_link.to_string()) == magnet_link, true);
+        assert_eq!(Magnet::new(&magnet_link.to_string()).unwrap() == magnet_link, true);
     }
 
     #[test]
-    #[should_panic]
     fn invalid_magnet_test() {
-        let _magnet_link = Magnet::new("https://example.com");
+        assert_eq!(Magnet::new("https://example.com"), Err(MagnetError::NotAMagnetURL));
 
     }
 
