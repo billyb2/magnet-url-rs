@@ -1,5 +1,7 @@
+use std::error::Error;
 use regex::Regex;
 use std::fmt;
+use std::fmt::{Display, Formatter};
 
 #[macro_use]
 extern crate lazy_static;
@@ -120,6 +122,14 @@ const MANIFEST_TOPIC_RE_STR: &str = r"mt=((\w+)[A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\\
 pub enum MagnetError {
     NotAMagnetURL,
 }
+
+impl Display for MagnetError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "provided link is not a valid magnet URL")
+    }
+}
+
+impl Error for MagnetError {}
 
 #[derive(Debug, Clone, Hash, PartialEq)]
 pub struct Magnet {
@@ -277,6 +287,7 @@ impl fmt::Display for Magnet {
 
 #[cfg(test)]
 mod tests {
+    use std::error::Error;
     use crate::{Magnet, MagnetError};
 
     #[test]
@@ -311,8 +322,11 @@ mod tests {
 
     #[test]
     fn invalid_magnet_test() {
-        assert_eq!(Magnet::new("https://example.com"), Err(MagnetError::NotAMagnetURL));
-
+        let result = Magnet::new("https://example.com");
+        assert_eq!(result, Err(MagnetError::NotAMagnetURL));
+        let err = result.unwrap_err();
+        assert_eq!(err.to_string(), "provided link is not a valid magnet URL");
+        assert!(err.source().is_none());
     }
 
     #[test]
