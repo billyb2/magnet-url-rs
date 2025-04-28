@@ -6,6 +6,9 @@ use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 use url::Url;
 
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
+
 #[macro_use]
 extern crate lazy_static;
 
