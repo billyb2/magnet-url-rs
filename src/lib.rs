@@ -1,14 +1,21 @@
-use std::error::Error;
 use regex::Regex;
+use std::collections::{HashMap, HashSet};
+use std::error::Error;
 use std::fmt;
 use std::fmt::{Display, Formatter};
+use std::str::FromStr;
+use url::Url;
+
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 
 #[macro_use]
 extern crate lazy_static;
 
 ///The regexes used to identify specific parts of the magnet
 const DISPLAY_NAME_RE_STR: &str = r"dn=([A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\{}\-]*)(&|$|\s)";
-const EXACT_TOPIC_RE_STR: &str = r"xt=urn:(sha1|btih|ed2k|aich|kzhash|md5|tree:tiger):([A-Fa-f0-9]+|[A-Za-z2-7]+)";
+const EXACT_TOPIC_RE_STR: &str =
+    r"xt=urn:(sha1|btih|ed2k|aich|kzhash|md5|tree:tiger):([A-Fa-f0-9]+|[A-Za-z2-7]+)";
 const ADDRESS_TRACKER_RE_STR: &str = r"tr=([A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\{}\-]*)(&|$|\s)";
 const KEYWORD_TOPIC_RE_STR: &str = r"kt=([A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\{}\-]*)(&|$|\s)";
 const EXACT_SOURCE_RE_STR: &str = r"xs=((\w+)[A-Za-z0-9!@#$%^:*<>,?/()_+=.{}\\-]*)(&|$|\s)";
@@ -131,7 +138,8 @@ impl Display for MagnetError {
 
 impl Error for MagnetError {}
 
-#[derive(Debug, Clone, Hash, PartialEq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Magnet {
     /// Display Name of the torrent
     pub display_name: Option<String>,
@@ -164,14 +172,13 @@ pub struct Magnet {
 }
 
 impl Magnet {
-
     /**Given a magnet URL, identify the specific parts, and return the Magnet struct. If the program
     can't identify a specific part of the magnet, then it will either give an empty version of what
     its value would normally be (such as an empty string, an empty vector, or in the case of xl, -1).
     It also doesn't validate whether the magnet url is good, which makes it faster, but dangerous!
     Only use this function if you know for certain that the magnet url given is valid.
     */
-    pub fn new_no_validation (magnet_str: &str) -> Magnet {
+    pub fn new_no_validation(magnet_str: &str) -> Magnet {
         lazy_static! {
             static ref DISPLAY_NAME_RE: Regex = Regex::new(DISPLAY_NAME_RE_STR).unwrap();
             static ref EXACT_TOPIC_RE: Regex = Regex::new(EXACT_TOPIC_RE_STR).unwrap();
@@ -186,10 +193,11 @@ impl Magnet {
 
         let validate_regex = |regex: &Regex, re_group_index| -> Option<String> {
             match regex.captures(magnet_str) {
-                Some(m) => m.get(re_group_index).map_or(None, |m| Some(m.as_str().to_string())),
-                None => None
+                Some(m) => m
+                    .get(re_group_index)
+                    .map_or(None, |m| Some(m.as_str().to_string())),
+                None => None,
             }
-
         };
 
         Magnet {
@@ -202,7 +210,6 @@ impl Magnet {
                     Some(m) => m.get(1).map_or(None, |m| Some(m.as_str().parse().unwrap())),
                     None => None,
                 }
-
             },
             source: validate_regex(&EXACT_SOURCE_RE, 1),
             trackers: {
@@ -213,13 +220,11 @@ impl Magnet {
                 }
 
                 tr_vec
-
             },
             search_keywords: validate_regex(&KEYWORD_TOPIC_RE, 1),
             web_seed: validate_regex(&WEB_SEED_RE, 1),
             acceptable_source: validate_regex(&ACCEPTABLE_SOURCE_RE, 1),
             manifest: validate_regex(&MANIFEST_TOPIC_RE, 1),
-
         }
     }
 
@@ -228,12 +233,46 @@ impl Magnet {
     pub fn new(magnet_str: &str) -> Result<Magnet, MagnetError> {
         if !magnet_str.starts_with("magnet:?") {
             Err(MagnetError::NotAMagnetURL)
-
         } else {
             Ok(Magnet::new_no_validation(magnet_str))
-
         }
+    }
+}
 
+impl FromStr for Magnet {
+    type Err = MagnetError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let url = Url::from_str(s).map_err(|_| MagnetError::NotAMagnetURL)?;
+        let pairs: HashMap<_, HashSet<_>> =
+            url.query_pairs().fold(HashMap::new(), |mut acc, (k, v)| {
+                acc.entry(k).or_default().insert(v);
+                acc
+            });
+
+        let extract_first = |k: &str| pairs.get(k).map(|s| s.iter().next().unwrap().to_string());
+
+        let hash_components: Option<Vec<_>> =
+            extract_first("xt").map(|s| s.splitn(3, ":").skip(1).map(String::from).collect());
+        let (hash_type, hash) = if let Some(ref hc) = hash_components {
+            (hc.get(0).map(String::from), hc.get(1).map(String::from))
+        } else {
+            (None, None)
+        };
+        Ok(Self {
+            display_name: extract_first("dn"),
+            hash_type,
+            hash,
+            length: extract_first("xl").and_then(|length| length.parse().ok()),
+            source: extract_first("xs"),
+            trackers: pairs
+                .get("tr")
+                .map_or(vec![], |trs| trs.iter().map(|s| s.to_string()).collect()),
+            search_keywords: extract_first("kt"),
+            web_seed: extract_first("ws"),
+            acceptable_source: extract_first("as"),
+            manifest: extract_first("mt"),
+        })
     }
 }
 
@@ -245,20 +284,28 @@ impl fmt::Display for Magnet {
         let mut magnet_string = String::from("magnet:?");
 
         if let Some(xt) = &self.hash {
-            magnet_string = format!("{}{}{}:{}", magnet_string, "xt=urn:", self.hash_type.as_ref().unwrap_or(&String::new()), xt);
+            magnet_string = format!(
+                "{}{}{}:{}",
+                magnet_string,
+                "xt=urn:",
+                self.hash_type.as_ref().unwrap_or(&String::new()),
+                xt
+            );
         }
 
         let add_to_mag_string = |p_name: String, p_val: &Option<String>| -> String {
             if let Some(p_val) = p_val {
                 format!("&{}={}", p_name, p_val)
-
             } else {
                 String::new()
-
             }
         };
 
-        magnet_string = format!("{}{}", magnet_string, add_to_mag_string(String::from("dn"), &self.display_name));
+        magnet_string = format!(
+            "{}{}",
+            magnet_string,
+            add_to_mag_string(String::from("dn"), &self.display_name)
+        );
 
         if let Some(xl) = &self.length {
             magnet_string = format!("{}&xl={}", magnet_string, xl);
@@ -273,22 +320,41 @@ impl fmt::Display for Magnet {
             format!("{}{}", magnet_string, tr_string)
         };
 
-        magnet_string = format!("{}{}", magnet_string, add_to_mag_string(String::from("ws"), &self.web_seed));
-        magnet_string = format!("{}{}", magnet_string, add_to_mag_string(String::from("xs"), &self.source));
-        magnet_string = format!("{}{}", magnet_string, add_to_mag_string(String::from("kt"), &self.search_keywords));
-        magnet_string = format!("{}{}", magnet_string, add_to_mag_string(String::from("as"), &self.acceptable_source));
-        magnet_string = format!("{}{}", magnet_string, add_to_mag_string(String::from("mt"), &self.manifest));
-
+        magnet_string = format!(
+            "{}{}",
+            magnet_string,
+            add_to_mag_string(String::from("ws"), &self.web_seed)
+        );
+        magnet_string = format!(
+            "{}{}",
+            magnet_string,
+            add_to_mag_string(String::from("xs"), &self.source)
+        );
+        magnet_string = format!(
+            "{}{}",
+            magnet_string,
+            add_to_mag_string(String::from("kt"), &self.search_keywords)
+        );
+        magnet_string = format!(
+            "{}{}",
+            magnet_string,
+            add_to_mag_string(String::from("as"), &self.acceptable_source)
+        );
+        magnet_string = format!(
+            "{}{}",
+            magnet_string,
+            add_to_mag_string(String::from("mt"), &self.manifest)
+        );
 
         write!(f, "{}", magnet_string)
-
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use std::error::Error;
+
     use crate::{Magnet, MagnetError};
+    use std::{error::Error, str::FromStr};
 
     #[test]
     fn sintel_test() {
@@ -297,19 +363,55 @@ mod tests {
 
         assert_eq!(magnet_link.display_name, Some("Sintel".to_string()));
         assert_eq!(magnet_link.hash_type, Some("btih".to_string()));
-        assert_eq!(magnet_link.hash, Some("08ada5a7a6183aae1e09d831df6748d566095a10".to_string()));
+        assert_eq!(
+            magnet_link.hash,
+            Some("08ada5a7a6183aae1e09d831df6748d566095a10".to_string())
+        );
         assert_eq!(magnet_link.length, None);
-        assert_eq!(magnet_link.source, Some("https%3A%2F%2Fwebtorrent.io%2Ftorrents%2Fsintel.torrent".to_string()));
-        assert_eq!(magnet_link.trackers[0], "udp%3A%2F%2Fexplodie.org%3A6969".to_string());
-        assert_eq!(magnet_link.trackers[1], "udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969".to_string());
-        assert_eq!(magnet_link.trackers[2], "udp%3A%2F%2Ftracker.empire-js.us%3A1337".to_string());
-        assert_eq!(magnet_link.trackers[3], "udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969".to_string());
-        assert_eq!(magnet_link.trackers[4], "udp%3A%2F%2Ftracker.opentrackr.org%3A1337".to_string());
-        assert_eq!(magnet_link.trackers[5], "wss%3A%2F%2Ftracker.btorrent.xyz".to_string());
-        assert_eq!(magnet_link.trackers[6], "wss%3A%2F%2Ftracker.fastcast.nz".to_string());
-        assert_eq!(magnet_link.trackers[7], "wss%3A%2F%2Ftracker.openwebtorrent.com".to_string());
-        assert_eq!(magnet_link.web_seed, Some("https%3A%2F%2Fwebtorrent.io%2Ftorrents%2F".to_string()));
-        assert_eq!(magnet_link.source, Some("https%3A%2F%2Fwebtorrent.io%2Ftorrents%2Fsintel.torrent".to_string()));
+        assert_eq!(
+            magnet_link.source,
+            Some("https%3A%2F%2Fwebtorrent.io%2Ftorrents%2Fsintel.torrent".to_string())
+        );
+        assert_eq!(
+            magnet_link.trackers[0],
+            "udp%3A%2F%2Fexplodie.org%3A6969".to_string()
+        );
+        assert_eq!(
+            magnet_link.trackers[1],
+            "udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969".to_string()
+        );
+        assert_eq!(
+            magnet_link.trackers[2],
+            "udp%3A%2F%2Ftracker.empire-js.us%3A1337".to_string()
+        );
+        assert_eq!(
+            magnet_link.trackers[3],
+            "udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969".to_string()
+        );
+        assert_eq!(
+            magnet_link.trackers[4],
+            "udp%3A%2F%2Ftracker.opentrackr.org%3A1337".to_string()
+        );
+        assert_eq!(
+            magnet_link.trackers[5],
+            "wss%3A%2F%2Ftracker.btorrent.xyz".to_string()
+        );
+        assert_eq!(
+            magnet_link.trackers[6],
+            "wss%3A%2F%2Ftracker.fastcast.nz".to_string()
+        );
+        assert_eq!(
+            magnet_link.trackers[7],
+            "wss%3A%2F%2Ftracker.openwebtorrent.com".to_string()
+        );
+        assert_eq!(
+            magnet_link.web_seed,
+            Some("https%3A%2F%2Fwebtorrent.io%2Ftorrents%2F".to_string())
+        );
+        assert_eq!(
+            magnet_link.source,
+            Some("https%3A%2F%2Fwebtorrent.io%2Ftorrents%2Fsintel.torrent".to_string())
+        );
         assert_eq!(magnet_link.search_keywords, None);
         assert_eq!(magnet_link.acceptable_source, None);
         assert_eq!(magnet_link.manifest, None);
@@ -317,7 +419,10 @@ mod tests {
         //Need to recreate a magnet struct from the string, since the elements could be in any order
         assert_eq!(Magnet::new(&magnet_link.to_string()).unwrap(), magnet_link);
         //Also tests PartialEq
-        assert_eq!(Magnet::new(&magnet_link.to_string()).unwrap() == magnet_link, true);
+        assert_eq!(
+            Magnet::new(&magnet_link.to_string()).unwrap() == magnet_link,
+            true
+        );
     }
 
     #[test]
@@ -352,6 +457,16 @@ mod tests {
         assert_eq!(magnet_link_2, magnet_link_3);
         //Tests PartialEq instead of Debug
         assert_eq!(magnet_link_2 == magnet_link_3, true);
+    }
 
+    #[test]
+    fn test_url_parse() {
+        const MAGNET_STR_1: &str = "magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=Sintel&tr=udp%3A%2F%2Fexplodie.org%3A6969&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Ftracker.empire-js.us%3A1337&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337&tr=wss%3A%2F%2Ftracker.btorrent.xyz&tr=wss%3A%2F%2Ftracker.fastcast.nz&tr=wss%3A%2F%2Ftracker.openwebtorrent.com&ws=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2F&xs=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2Fsintel.torrent";
+
+        let magnet = Magnet::from_str(MAGNET_STR_1).unwrap();
+        let magnet2 = Magnet::new(MAGNET_STR_1).unwrap();
+        println!("{magnet:#?}");
+        println!("{magnet2:#?}");
+        assert_eq!(magnet, magnet2);
     }
 }
