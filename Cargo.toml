@@ -14,10 +14,11 @@ edition = "2018"
 [dependencies]
 lazy_static = "1"
 regex = "1"
+serde = { version = "1.0.219", features = ["serde_derive"], optional = true }
 url = "2.5.4"
 
 [dev-dependencies]
-criterion = {version="0.3", features=["html_reports"]}
+criterion = { version = "0.3", features = ["html_reports"] }
 
 [[bench]]
 name = "benchmark"
