@@ -138,7 +138,7 @@ impl Display for MagnetError {
 
 impl Error for MagnetError {}
 
-#[derive(Debug, Clone, Hash, PartialEq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Magnet {
     /// Display Name of the torrent
