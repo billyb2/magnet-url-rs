@@ -1,19 +1,17 @@
 [package]
 name = "magnet-url"
-version = "2.0.0"
-authors = ["William Batista <bootlegbilly@protonmail.ch>"]
+version = "3.0.0"
+authors = ["Billy <me@bootlegbilly.dev>"]
 license = "MIT"
-description = "A simple, hackable magnet url parser in Rust"
+description = "A simple, efficient magnet url parser in Rust"
 homepage = "https://github.com/billyb2/magnet-url-rs"
 repository = "https://github.com/billyb2/magnet-url-rs"
 readme = "README.md"
 categories = ["parsing", "encoding", "parser-implementations"]
 keywords = ["torrent", "magnet", "magnet_url", "parse"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
-lazy_static = "1"
-regex = "1"
 
 [dev-dependencies]
 criterion = {version="0.3", features=["html_reports"]}
@@ -23,11 +21,6 @@ name = "benchmark"
 harness = false
 
 [profile.bench]
-opt-level = 3
-lto = "fat"
-codegen-units = 1
-
-[profile.release]
 opt-level = 3
 lto = "fat"
 codegen-units = 1

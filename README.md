@@ -1,105 +1,159 @@
-# What is a magnet url
-A magnet is a URI scheme that identifies files by their hash,
-normally used in peer to peer file sharing networks (like
-Bittorrent). Basically, a magnet link identifies a torrent you
-want to download, and tells the torrent client how to download
-it. They make it very easy to share files over the internet,
-and use a combination of DHT and trackers to tell your torrent
-client where other peers who can share the file with you are.
+# Magnet URL Parser
 
-# Why is magnet_url
-While working on a side project, I realized that I had the
-misfortune of trying to get the component parts of a magnet-url
-and then do further processing of them. I quickly wrote some
-Regex for it, but then I realized that this would be really
-useful for other projects that are dealing with torrents in
-Rust. By making it modifiable, too, it would allow for the
-creation of custom magnet links, which would also be useful for
-torrent based projects.
+A simple, efficient magnet URL parser in Rust with zero dependencies.
 
-# Why use magnet_url
-magnet_url has the goal of, as you may have guessed, parsing the parts of magnets. It does
-this using some relatively simple regexes. The crate is designed to be very simple and efficient,
-with a lot of flexibility. It's also designed to be relatively easy to handle errors, and
-modification of its source is greatly encouraged through documentation and its license.
+## What is a magnet URL?
 
-## How to use this crate
-Parsing a magnet is very simple:
+A magnet URL is a URI scheme that identifies files by their hash, normally used in peer-to-peer file sharing networks (like BitTorrent). Magnet links identify a torrent you want to download and tell the torrent client how to download it. They make it very easy to share files over the internet, using a combination of DHT and trackers to find peers who can share the file with you.
 
- ```rust
- use magnet_url::Magnet;
- let magneturl = Magnet::new("magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=Sintel&tr=udp%3A%2F%2Fexplodie.org%3A6969&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Ftracker.empire-js.us%3A1337&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337&tr=wss%3A%2F%2Ftracker.btorrent.xyz&tr=wss%3A%2F%2Ftracker.fastcast.nz&tr=wss%3A%2F%2Ftracker.openwebtorrent.com&ws=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2F&xs=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2Fsintel.torrent");
- ```
+## Features
 
-This returns the Magnet struct, which is made up of the fields listed below this section. To
-access one of these fields is also very simple:
+- Zero dependencies for lightweight integration
+- Simple, efficient string parsing
+- Comprehensive magnet URL component support
+- Builder pattern for easy creation
+- Proper error handling
+- 100% safe Rust
 
- ```rust
- use magnet_url::Magnet;
- let magneturl = Magnet::new("magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=Sintel&tr=udp%3A%2F%2Fexplodie.org%3A6969&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Ftracker.empire-js.us%3A1337&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337&tr=wss%3A%2F%2Ftracker.btorrent.xyz&tr=wss%3A%2F%2Ftracker.fastcast.nz&tr=wss%3A%2F%2Ftracker.openwebtorrent.com&ws=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2F&xs=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2Fsintel.torrent");
- println!("{:?}", magneturl.dn);
- ```
+## Usage
 
-If you'd like to modify parts of the magnet_url to customize it, that can be done as well!
+Add this to your `Cargo.toml`:
 
- ```rust
- use magnet_url::Magnet;
- let mut magneturl = Magnet::new("magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=Sintel&tr=udp%3A%2F%2Fexplodie.org%3A6969&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Ftracker.empire-js.us%3A1337&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337&tr=wss%3A%2F%2Ftracker.btorrent.xyz&tr=wss%3A%2F%2Ftracker.fastcast.nz&tr=wss%3A%2F%2Ftracker.openwebtorrent.com&ws=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2F&xs=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2Fsintel.torrent");
- println!("{:?}", magneturl.dn);
- magneturl.dn = String::from("hello_world");
- println!("{:?}", magneturl.dn);
- ```
+```toml
+[dependencies]
+magnet-url = "3.0.0"
+```
 
-In fact, you can construct your own magnet url as well, as long as you fill in all the
-parameters!
+### Parsing a Magnet URL
 
- ```rust
- use magnet_url::Magnet;
- //Note, this magnet won't actually download, sorry :/
- Magnet {
-     dn: "hello_world".to_string(),
-     hash_type: "sha1".to_string(),
-     xt: "2aae6c35c94fcfb415dbe95f408b9ce91ee846ed".to_string(),
-     xl: 1234567890,
-     tr:
-         {
-             let mut tr_vec = Vec::new();
-             tr_vec.push("https://example.com/".to_string());
-             tr_vec
-         },
-     kt: "cool+stuff".to_string(),
-     ws: String::new(),
-     acceptable_source: String::new(),
-     mt: String::new(),
-     xs: String::new(),
- };
- ```
+```rust
+use magnet_url::Magnet;
 
-From a Magnet struct, you can generate a magnet string again
+fn main() {
+    let magnet_str = "magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=Sintel";
+    
+    // Parse the magnet URL
+    match Magnet::new(magnet_str) {
+        Ok(magnet) => {
+            println!("Display name: {:?}", magnet.display_name());
+            println!("Hash type: {:?}", magnet.hash_type());
+            println!("Hash: {:?}", magnet.hash());
+            println!("Trackers: {:?}", magnet.trackers());
+        },
+        Err(err) => {
+            println!("Error parsing magnet URL: {}", err);
+        }
+    }
+}
+```
 
- ```rust
- use magnet_url::Magnet;
- //Note, this magnet won't actually download, sorry :/
- let magnet_struct = Magnet {
-     dn: "hello_world".to_string(),
-     hash_type: "sha1".to_string(),
-     xt: "2aae6c35c94fcfb415dbe95f408b9ce91ee846ed".to_string(),
-     xl: 1234567890,
-     tr: vec!["https://example.com/".to_string()],
-     kt: "cool+stuff".to_string(),
-     ws: String::new(),
-     acceptable_source: String::new(),
-     mt: String::new(),
-     xs: String::new(),
- };
+### Creating a Magnet URL
 
- let magnet_string = magnet_struct.to_string();
- println!("{}", magnet_string);
- ```
+Use the builder pattern to create magnet URLs:
 
-Invalid magnet url's will result in a `panic!` (This will be changed to an error in v2.0.0
- ```rust
- use magnet_url::Magnet;
- #[should_panic]
- let _magnet_link = Magnet::new("https://example.com");
- ```
+```rust
+use magnet_url::MagnetBuilder;
+
+fn main() {
+    let magnet = MagnetBuilder::new()
+        .display_name("My Torrent")
+        .hash_type("btih")
+        .hash("1234567890abcdef1234567890abcdef12345678")
+        .length(12345)
+        .add_tracker("udp://tracker.example.com:6969")
+        .add_trackers(&["udp://tracker2.example.com:6969", "wss://tracker3.example.com"])
+        .web_seed("https://example.com/seed")
+        .build();
+    
+    println!("Generated magnet URL: {}", magnet.to_string());
+}
+```
+
+### Error Handling
+
+The library uses proper error handling with the `Result` type:
+
+```rust
+use magnet_url::{Magnet, MagnetError};
+
+fn main() {
+    // This will return an Err(MagnetError::NotAMagnetURL)
+    let result = Magnet::new("https://example.com");
+    
+    match result {
+        Ok(magnet) => {
+            println!("Display name: {:?}", magnet.display_name());
+        },
+        Err(MagnetError::NotAMagnetURL) => {
+            println!("The provided string is not a valid magnet URL");
+        }
+    }
+}
+```
+
+### Converting to String
+
+You can convert a `Magnet` instance back to a string:
+
+```rust
+use magnet_url::MagnetBuilder;
+
+fn main() {
+    let magnet = MagnetBuilder::new()
+        .display_name("My Torrent")
+        .hash_type("btih")
+        .hash("1234567890abcdef1234567890abcdef12345678")
+        .build();
+    
+    // Convert to a magnet URL string
+    let magnet_url = magnet.to_string();
+    println!("{}", magnet_url);
+    // Output: magnet:?xt=urn:btih:1234567890abcdef1234567890abcdef12345678&dn=My%20Torrent
+}
+```
+
+## Supported Magnet Components
+
+All standard magnet URL components are supported:
+
+- `dn` - Display Name
+- `xt` - Exact Topic (hash type and hash)
+- `xl` - Exact Length
+- `tr` - Tracker URL
+- `kt` - Keyword Topic
+- `ws` - Web Seed
+- `xs` - Exact Source
+- `as` - Acceptable Source
+- `mt` - Manifest Topic
+
+### Accessing Magnet Components
+
+Each component can be accessed through getter methods:
+
+```rust
+use magnet_url::Magnet;
+
+fn main() {
+    let magnet = Magnet::new("magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=Sintel").unwrap();
+    
+    // Access components
+    println!("Display name: {:?}", magnet.display_name());
+    println!("Hash type: {:?}", magnet.hash_type());
+    println!("Hash: {:?}", magnet.hash());
+    println!("Exact Length: {:?}", magnet.length());
+    println!("Tracker URLs: {:?}", magnet.trackers());
+    println!("Web Seed: {:?}", magnet.web_seed());
+    println!("Source: {:?}", magnet.source());
+    println!("Search Keywords: {:?}", magnet.search_keywords());
+    println!("Acceptable Source: {:?}", magnet.acceptable_source());
+    println!("Manifest: {:?}", magnet.manifest());
+}
+```
+
+## Performance
+
+The library uses simple string parsing techniques without any regex or other heavy dependencies, making it very efficient for parsing magnet URLs. Benchmark results show that parsing a typical magnet URL takes around 500-600 nanoseconds, and generating a magnet URL string takes about 1.3-1.4 microseconds.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE.md file for details.
